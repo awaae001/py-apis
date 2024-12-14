@@ -6,6 +6,7 @@ import json
 
 CACHE_DIR = "./temp"
 CACHE_EXPIRY = 24 * 60 * 60  # 1 天，以秒为单位
+GITHUB_TOKEN = "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"  # 替换为你的 GitHub Token
 
 # 确保缓存目录存在
 os.makedirs(CACHE_DIR, exist_ok=True)
@@ -19,6 +20,27 @@ def is_cache_valid(file_path):
     file_mtime = os.path.getmtime(file_path)
     current_time = time.time()
     return (current_time - file_mtime) < CACHE_EXPIRY
+
+def make_authenticated_request(url):
+    """
+    使用 GitHub Token 进行认证的 HTTP GET 请求
+    :param url: 请求的 URL
+    :return: 响应 JSON 数据或 None（跳过错误的请求）
+    """
+    headers = {
+        "Authorization": f"token {GITHUB_TOKEN}",
+        "Accept": "application/vnd.github.v3+json"
+    }
+    try:
+        response = requests.get(url, headers=headers, timeout=10)
+        if response.status_code == 403:  # 速率限制或权限问题
+            print(f"请求被限制或无权限访问（403）：{url}")
+            return None  # 跳过
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        print(f"请求失败: {e}，跳过 {url}")
+        return None
 
 def get_user_data_from_api(user_id):
     """
@@ -38,35 +60,29 @@ def get_user_data_from_api(user_id):
         
         print(f"缓存无效或不存在，开始从 GitHub API 获取数据...")
 
-        # 构造 GitHub API 的 URL
+        # 获取用户基本数据
         user_url = f"https://api.github.com/users/{user_id}"
-
-        # 获取用户信息
-        user_response = requests.get(user_url, timeout=10)
-        user_response.raise_for_status()
-        user_data = user_response.json()
-
-        # 获取用户仓库信息
+        user_data = make_authenticated_request(user_url)
+        if not user_data:  # 如果返回 None，则跳过
+            return {"error": f"无法获取用户 {user_id} 的数据（403 或其他问题）"}
+        
+        # 获取用户仓库数据
         repo_url = user_data.get('repos_url', '')
-        repo_response = requests.get(repo_url, timeout=10)
-        repo_response.raise_for_status()
-        repos_data = repo_response.json()
+        repos_data = make_authenticated_request(repo_url)
+        if not repos_data:  # 如果返回 None，则继续执行
+            repos_data = []
 
-        # 计算用户的 stars 总数和过去一年的提交量
+        # 计算 stars 总数和过去一年的提交数量
         stars = 0
         commit_count = 0
         last_year_date = (datetime.now() - timedelta(days=365)).isoformat()
 
         for repo in repos_data:
-            # 累计 stars 数量
             stars += repo.get('stargazers_count', 0)
-
-            # 累计过去一年的提交数
-            commits_url = repo.get('commits_url', '').split("{/sha}")[0]
-            commits_response = requests.get(f"{commits_url}?since={last_year_date}", timeout=10)
-            commits_response.raise_for_status()
-            commits_data = commits_response.json()
-            commit_count += len(commits_data)
+            commits_url = repo.get('commits_url').split("{/sha}")[0]
+            commits_data = make_authenticated_request(f"{commits_url}?since={last_year_date}")
+            if commits_data:  # 跳过失败的提交数据请求
+                commit_count += len(commits_data)
 
         # 组装用户数据
         result = {
@@ -86,11 +102,9 @@ def get_user_data_from_api(user_id):
         # 缓存解析后的结果
         with open(cache_file, 'w', encoding='utf-8') as file:
             json.dump(result, file, ensure_ascii=False, indent=4)
-        print(f"解析结果已缓存到: {cache_file}")
+        print(f"解析结果已缓存: {cache_file}")
 
         return result
 
-    except requests.RequestException as e:
-        return {"error": f"获取用户数据失败: {str(e)}"}
     except Exception as e:
         return {"error": f"解析数据失败: {str(e)}"}
