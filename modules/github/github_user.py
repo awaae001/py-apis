@@ -6,7 +6,7 @@ import json
 
 CACHE_DIR = "./temp"
 CACHE_EXPIRY = 24 * 60 * 60  # 1 天，以秒为单位
-GITHUB_TOKEN = "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"  # 替换为你的 GitHub Token
+GITHUB_TOKEN = "github_token_test-here"  # 替换为你的 GitHub Token
 
 # 确保缓存目录存在
 os.makedirs(CACHE_DIR, exist_ok=True)
