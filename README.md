@@ -7,16 +7,22 @@
 ## 项目结构
 
 ```
-├── main.py              # Flask API 应用入口文件
-├── routes/              # API 路由文件夹
-│   ├── steam.py         # 处理 Steam 游戏相关的路由        # 处理 Steam 捆绑包相关的路由           # 其他可能的路由文件
-├── modules/             # 功能模块文件夹
-│   ├── steam_utils.py         # 获取 Steam 游戏信息的模块
-│   ├── steam_pack.py          # 获取 Steam 捆绑包信息的模块
-│   └── ...              # 其他功能模块          # 存放可能的 HTML 模板文件（如果需要）
-├── .venv/               # Python 虚拟环境文件夹
-├── requirements.txt     # 项目依赖列表
-└── README.md            # 项目描述文件
+├── README.md                    #  项目介绍         
+├── main.py                      #  项目的入口文件
+├── modules                      #  模块文件夹
+│   ├── github                   #  GitHub API 模块
+│   │   ├── __init__.py
+│   │   ├── github_rep.py        #  GitHub 仓库信息
+│   │   └── github_user.py       #  GitHub 用户信息
+│   └── steam                    #  Steam 商店页面解析模块
+│       ├── __init__.py          
+│       ├── steam_pack.py        #  Steam 捆绑包信息
+│       └── steam_utils.py       #  Steam 通用信息解析
+├── routes                       #  路由文件夹
+│   ├── __init__.py
+│   ├── github.py                #  GitHub 路由
+│   └── steam.py                 #  Steam 路由
+└── temp                         #  临时文件
 ```
 
 ### 文件功能描述：
@@ -24,7 +30,6 @@
 - **main.py**：应用程序的入口文件，设置了 Flask 的基础 API 配置，包含了各个路由的注册。
 - **routes/**：存放 API 路由的文件夹，每个文件对应不同的 API 功能，例如游戏信息、捆绑包信息等。
 - **modules/**：包含各个功能模块，负责具体的爬虫逻辑，数据解析和处理。每个模块会使用 `requests` 获取页面，使用 `BeautifulSoup` 解析页面，提取所需信息。
-- **.venv/**：虚拟环境文件夹，包含项目的所有 Python 包依赖。
 - **requirements.txt**：记录项目的依赖包，以便他人能够通过 `pip install -r requirements.txt` 安装所需依赖。
 
 ## 主要功能
@@ -36,6 +41,14 @@
 2. **Steam 捆绑包信息抓取**
    - API 路由：`/api/steam/pack?id=<bundle_id>`
    - 功能：根据传入的捆绑包 ID 获取该捆绑包的详细信息，包括捆绑包的总价、折扣、包含的游戏及其 ID。
+
+3. **GitHub 用户API**
+   - API 路由：`/api/github/user?id=<user_id>`
+   - 功能：根据传入的用户 ID 获取该用户的详细信息，包括头像、简介、关注数以及提交量和发布的代码库数量
+
+4. **GitHub 仓库信息抓取**
+   - API 路由：`/api/github/rep?rep=<repo_id>`
+   - 功能：根据传入的仓库 ID 获取该仓库的详细信息，包括仓库名称、描述、Star 数量、Fork 数量等。
 
 ## 使用说明
 
@@ -70,49 +83,17 @@
    gunicorn -w 4 main:app
    ```
 
-3. 访问 API：
-   - 获取 Steam 游戏信息：`http://127.0.0.1:5000/api/steam/game?id=2704110`
-   - 获取 Steam 捆绑包信息：`http://127.0.0.1:5000/api/steam/pack?id=43192`
-
-### API 示例
-
-1. **获取游戏信息**
-   - 请求 URL：`/api/steam/game?id=2704110`
-   - 返回 JSON 示例：
-     ```json
-     {
-       "game_id": 2704110,
-       "name": "Aliya",
-       "price": "¥ 350",
-       "discount": "5%",
-       "languages": ["简体中文", "英语"]
-     }
-     ```
-
-2. **获取捆绑包信息**
-   - 请求 URL：`/api/steam/pack?id=43192`
-   - 返回 JSON 示例：
-     ```json
-     {
-       "bundle_id": 43192,
-       "name": "Aliya 音画整合包",
-       "price": "¥ 555",
-       "discount": "5%",
-       "included_games": [2704110, 3041090]
-     }
-     ```
-
-## 依赖项
-
-- **Flask**：Web 框架，用于处理 HTTP 请求和响应。
-- **requests**：用于从 Steam 获取页面内容。
-- **beautifulsoup4**：用于解析 HTML 页面并提取数据。
-- **gunicorn**：生产环境服务器，用于运行 Flask 应用。
-- **flask-cors**：用于处理跨域请求（如需要）。
+   - **核心依赖（按功能）**：
+     - `Flask` 和 `Flask-Cors`：提供 Web 框架和跨域支持。
+     - `requests`：处理 HTTP 请求。
+     - `beautifulsoup4` 和 `soupsieve`：解析 HTML。
+     - `python-dotenv`：加载环境变量。
+     - `gunicorn`：用于生产环境部署 Flask。
+     - 可能需要的其他实用包：`attrs`, `cattrs`, `url-normalize`。
 
 ## 注意事项
 
 - 请确保您的 Python 环境中安装了所有必要的包，最好使用虚拟环境进行隔离。
-- 由于爬虫程序涉及从外部网站抓取数据，请确保遵守 Steam 的使用条款和隐私政策，避免对网站产生过大的压力。
+- 由于爬虫程序涉及从外部网站抓取数据，请确保遵守 Steam 的使用条款和隐私政策，避免对网站产生过大的压力
 
-这个文件描述了项目的结构、功能、使用方法以及如何安装和运行。开发者可以根据这个描述了解项目的各个部分，并根据需要进行进一步的开发或部署。如果是 AI 需要理解这个项目的工作原理，它可以帮助理解项目的核心功能和组件。
+- 请在`/modules/github/github_user.py`中的`GITHUB_TOKEN = "github_token_test-here"`填写你的token避免github的API调用次数限制

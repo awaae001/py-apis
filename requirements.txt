@@ -1,0 +1,9 @@
+Flask~=3.1.0
+Flask-Cors~=5.0.0
+beautifulsoup4~=4.12.3
+requests~=2.32.3
+python-dotenv~=1.0.1
+gunicorn~=23.0.0
+attrs~=24.2.0
+cattrs~=24.1.2
+url-normalize~=1.4.3
