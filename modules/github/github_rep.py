@@ -1,6 +1,7 @@
 import os
 import time
 import requests
+import json
 
 CACHE_DIR = "./temp"
 CACHE_EXPIRY = 24 * 60 * 60  # 1 天，以秒为单位
@@ -44,8 +45,7 @@ def get_repo_details_from_api(repo_full_name):
             print(f"使用有效的本地缓存: {html_file}")
             # 从缓存文件加载数据
             with open(html_file, 'r', encoding='utf-8') as file:
-                data = file.read()
-            data = eval(data)  # 将文件中的字符串恢复为字典对象
+                data = json.load(file)  # 使用 json.load() 解析数据
         
         # 获取仓库相关数据
         repo_name = data.get('name', '仓库名称未找到')
