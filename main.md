@@ -9,14 +9,11 @@
 ```
 ├── main.py              # Flask API 应用入口文件
 ├── routes/              # API 路由文件夹
-│   ├── steam.py         # 处理 Steam 游戏相关的路由
-│   ├── pack.py          # 处理 Steam 捆绑包相关的路由
-│   └── ...              # 其他可能的路由文件
+│   ├── steam.py         # 处理 Steam 游戏相关的路由        # 处理 Steam 捆绑包相关的路由           # 其他可能的路由文件
 ├── modules/             # 功能模块文件夹
-│   ├── steam.py         # 获取 Steam 游戏信息的模块
-│   ├── pack.py          # 获取 Steam 捆绑包信息的模块
-│   └── ...              # 其他功能模块
-├── templates/           # 存放可能的 HTML 模板文件（如果需要）
+│   ├── steam_utils.py         # 获取 Steam 游戏信息的模块
+│   ├── steam_pack.py          # 获取 Steam 捆绑包信息的模块
+│   └── ...              # 其他功能模块          # 存放可能的 HTML 模板文件（如果需要）
 ├── .venv/               # Python 虚拟环境文件夹
 ├── requirements.txt     # 项目依赖列表
 └── README.md            # 项目描述文件

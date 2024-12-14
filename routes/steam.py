@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
-from modules.steam_utils import get_game_details
-from modules.steam_pack import get_pack_details
+from modules.steam.steam_utils import get_game_details
+from modules.steam.steam_pack import get_pack_details
 
 steam_bp = Blueprint('steam', __name__)
 
